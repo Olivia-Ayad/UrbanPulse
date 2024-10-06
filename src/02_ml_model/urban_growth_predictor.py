@@ -9,6 +9,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
 from typing import Dict, Tuple
 import logging
+import csv
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -105,6 +107,34 @@ def predict_future_growth(model: RandomForestRegressor, scaler: StandardScaler, 
 
     return pd.DataFrame(future_predictions)
 
+def export_predictions_to_csv(predictions: pd.DataFrame, filename: str = 'urban_growth_predictions.csv'):
+    """Export predictions to a CSV file in a Grasshopper-friendly format."""
+    # Define a fixed path where Grasshopper can easily find the file
+    desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+    file_path = os.path.join(desktop_path, filename)
+    
+    # Ensure the data is in the correct format
+    predictions['year'] = predictions['year'].astype(int)
+    predictions['predicted_population'] = predictions['predicted_population'].astype(float)
+    predictions['predicted_growth_rate'] = predictions['predicted_growth_rate'].astype(float)
+    
+    # Save the CSV file
+    predictions.to_csv(file_path, index=False, float_format='%.2f')
+    
+    logging.info(f"Predictions exported to {file_path}")
+    
+    # Also save as a plain text file for easier Grasshopper import
+    txt_file_path = file_path.replace('.csv', '.txt')
+    with open(txt_file_path, 'w') as f:
+        writer = csv.writer(f, delimiter=',')
+        writer.writerow(['year', 'population', 'growth_rate'])  # Header
+        for _, row in predictions.iterrows():
+            writer.writerow([int(row['year']), f"{row['predicted_population']:.2f}", f"{row['predicted_growth_rate']:.4f}"])
+    
+    logging.info(f"Predictions also exported as text to {txt_file_path}")
+
+    return file_path, txt_file_path
+
 def main():
     # Connect to the database
     conn = connect_to_database()
@@ -128,9 +158,20 @@ def main():
     logging.info("Model Performance:")
     logging.info(f"Metrics: {metrics}")
 
+    # Generate future predictions
+    last_year_data = features.iloc[-1].to_frame().T  # Get the last year's data
+    future_predictions = predict_future_growth(model, scaler, last_year_data, num_years=10)
+
+    # Export predictions to CSV
+    export_predictions_to_csv(future_predictions, 'urban_growth_predictions_bayonne.csv')
+
+    # Print predictions
+    logging.info("Future Urban Growth Predictions for Bayonne, NJ:")
+    logging.info(future_predictions)
+
     # Save the model and scaler
-    joblib.dump((model, scaler), 'urban_growth_model.joblib')
-    logging.info("Model and scaler saved to 'urban_growth_model.joblib'")
+    joblib.dump((model, scaler), 'urban_growth_model_bayonne.joblib')
+    logging.info("Model and scaler saved to 'urban_growth_model_bayonne.joblib'")
 
     # Close the database connection
     conn.close()
