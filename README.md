@@ -44,6 +44,10 @@ Adaptive grid system for granular urban analysis
 5. Components
 
 6. Data Sources
+U.S. Census Bureau (Demographic and economic data)
+EPA AirNow (Air quality data)
+USGS National Map (Elevation and land cover data)
+OpenStreetMap (Infrastructure data)
 
 7. Machine Learning Model
 
