@@ -26,6 +26,18 @@ Environmental impact assessment based on air quality data
 Adaptive grid system for granular urban analysis
 
 3. Installation
+    1.Clone the repository:
+    git clone https://github.com/yourusername/urbanpulse.git
+    cd urbanpulse
+
+    2.Install required dependencies:
+    pip install -r requirements.txt
+
+    3.Set up environment variables: Create a file named env_file.txt in the project root 
+    and add your API keys:
+    TRIMBLE_API_KEY=your_trimble_api_key
+    CENSUS_API_KEY=your_census_api_key
+    AIRNOW_API_KEY=your_airnow_api_key
 
 4. Usage
 
